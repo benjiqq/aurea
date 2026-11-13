@@ -1,8 +1,10 @@
-You've identified a fundamental economic problem with PoW: competitive mining dissipates much of the economic rent into electricity, hardware, and infrastructure.
+# Aurea - Proof of concept
 
-Mining rights could change this substantially. The key is separating the right to produce blocks from the computational competition to produce them.
+Aurea explores whether a blockchain can separate the competition for mining rights from day-to-day block production. The proposed hybrid schedules 51% of block opportunities for miners who earn temporary rights through proof of work (PoW) and 49% for ordinary PoW miners. Ordinary PoW blocks confirm rights-produced blocks and determine which chain nodes follow.
 
-## 1. Why conventional PoW is economically inefficient
+The proof of concept examines how the hybrid would allocate rights, handle missed slots, and settle competing histories. It also compares auctions, delayed rewards, and separate issuance as ways to change how miners compete for rewards.
+
+## 1. The economics of conventional PoW
 
 Suppose a blockchain distributes $10 million annually in block rewards and fees.
 
@@ -12,8 +14,6 @@ In a mature competitive equilibrium:
 
 \\[ \text{Mining revenue}\approx\text{Mining costs}+\text{normal profit} \\]
 
-For illustration:
-
 | Annual economics              | Conventional PoW |
 | ----------------------------- | ---------------- |
 | Mining rewards + fees         | $10M             |
@@ -22,123 +22,71 @@ For illustration:
 | Infrastructure and operations | $1M              |
 | Miner economic profit         | $1M              |
 
-These are illustrative figures, not a universal cost structure.
+The figures illustrate one possible cost structure.
 
-However, the expenditure isn't entirely wasted. It purchases resistance to chain reorganization and double-spending.
+Mining expenditure purchases resistance to chain reorganization and double-spending.
 
 The economic question is whether $9M of annual expenditure produces $9M of marginal security value. Often it may not.
 
-Crucially, blockchain security is a collective benefit, but mining competition is privately optimized. The market does not automatically select a socially optimal security budget.
+Blockchain security is a collective benefit, but mining competition is privately optimized. The market does not automatically select a socially optimal security budget.
 
-## 2. Mining rights: separate competition from production
+## 2. What a mining right grants
 
 Imagine a blockchain where miners must obtain a right to mine before participating.
 
-A mining right could represent:
+Depending on the design, a mining right can grant one or more of the following.
 
 - Permission to produce blocks during a particular epoch.
 - A fraction of the epoch's block-production opportunities.
 - A claim on future block rewards.
 - A transferable asset that can be sold or leased.
 
-The interesting question is how these rights are initially distributed.
+## 3. Model A — Auctioned mining rights
 
-### Model A: Auction mining rights
+Miners bid for the right to produce blocks. The example below compares illustrative annual costs. Each model provides different security guarantees.
 
-Instead of miners continuously competing with electricity, they bid for mining rights.
-
-Example:
-
-Illustrative annual economics
-
-Conventional PoW
-
-# $9M
-
-Competitive mining expenses
-
-Auctioned mining rights
-
-# $1M
-
-Illustrative operating expenses
-
-PoW: physical resource expenditure
-
-$9M
-
-Rights: physical operating expenditure
-
-$1M
-
-Illustrative comparison only; not equivalent security guarantees.
+| Model | Annual physical expenditure |
+| --- | ---: |
+| Conventional PoW | $9M in competitive mining expenses |
+| Auctioned mining rights | $1M in operating expenses |
 
 If the auction raises $8M, that money can be burned, returned to a treasury, or redistributed to token holders.
 
-Instead of $8M going to hardware and electricity, it becomes an economic transfer within the system.
+The $8M auction payment is an economic transfer within the system. Security depends on who owns and controls the mining rights.
 
-But this creates a new issue: security is now determined by ownership and control of mining rights, rather than the cost of continuously producing computational work.
+## 4. Model B — PoW-earned mining rights
 
-It's no longer conventional permissionless PoW.
+Miners compete in a 24-hour PoW window. Each miner's share of accepted work determines their share of block-production opportunities over the next 30 days. The rights expire at the end of that period and must be earned again.
 
-## 3. Model B: PoW generates mining rights
+A shorter competition window can still lead to high total expenditure. If the rights are worth $10M, miners can spend nearly $10M competing to acquire them.
 
-This is potentially more interesting.
-
-Rather than using PoW to produce every block, use PoW to acquire longer-lived mining rights.
-
-For example:
-
-1. Miners perform PoW during a 24-hour allocation period.
-2. Their accepted work determines their share of mining rights for the next 30 days.
-3. During those 30 days, blocks are produced cheaply according to the allocated rights.
-4. Rights expire and must be earned again.
-
-1
-
-PoW competition
-
-Earn mining rights
-
-2
-
-Rights epoch
-
-Produce blocks cheaply
-
-3
-
-Expiration
-
-Renew through PoW
-
-This reduces the frequency of expensive mining competitions, but does not automatically reduce total expenditure.
-
-If rights are worth $10M, rational miners can still spend nearly $10M competing to acquire them.
-
-This is the critical insight:
-
-\\[ \boxed{\text{Less frequent PoW}\neq\text{Less total PoW expenditure}} \\]
-
-As long as rewards are allocated through an open competitive race, rent dissipation remains.
-
-### Hybrid variant: 51% mining rights and 49% ordinary PoW
+### Hybrid variant with 51% mining rights and 49% ordinary PoW
 
 Run both production modes on one chain. Each cycle has 49 ordinary PoW blocks and 51 scheduled rights slots. Each PoW block is preceded by one rights slot, with a second slot before two evenly spaced PoW blocks per cycle. With equal block subsidies, the schedule gives rights holders 51% of potential issuance. A missed rights slot pays no subsidy, so the realized split can differ.
 
-**Allocate rights with PoW tickets.** During a roughly 24-hour allocation window, miners submit tickets that meet a protocol-set hash target and commit to the upcoming rights epoch, a recent PoW block, and the miner's public key. Nodes count each valid ticket included in the chain once. For a prototype, keep the ticket target fixed within each window so each ticket carries equal weight. Close the window far enough ahead of activation for the tally to gain PoW confirmations, then use a public seed to draw a winning ticket for each rights slot in the roughly 30-day epoch. A miner with 10% of accepted tickets can expect 10% of the rights slots, or 5.1% of all scheduled block opportunities, plus any ordinary PoW blocks they mine. The prototype can measure both windows in ordinary PoW block heights calibrated to the intended durations. Rights expire at the end of the epoch.
+#### Ticket allocation
 
-**Produce and confirm blocks.** The selected ticket holder signs a transaction block for its slot. The following PoW block commits to the signed blocks it includes and identifies any skipped slots. The protocol needs a consensus-verifiable rule for when a slot may be skipped so an offline rights holder cannot halt the chain. Rights blocks are provisional until included by a PoW block, and that inclusion can be reversed by a PoW reorganization. If a rights holder signs competing versions, the PoW block's commitment determines which version it confirms.
+During a roughly 24-hour allocation window, miners submit tickets that meet a protocol-set hash target and commit to the upcoming rights epoch, a recent PoW block, and the miner's public key. Nodes count each valid ticket included in the chain once. For a prototype, keep the ticket target fixed within each window so each ticket carries equal weight. Close the window far enough ahead of activation for the tally to gain PoW confirmations, then use a public seed to draw a winning ticket for each rights slot in the roughly 30-day epoch.
 
-**Choose the chain by cumulative ordinary PoW.** Nodes follow the valid history with the most cumulative ordinary block work. Tickets determine eligibility for rights slots and contribute zero weight to fork choice. Rights holders get most scheduled production, while ordinary PoW miners settle competing histories.
+A miner with 10% of accepted tickets can expect 10% of the rights slots, or 5.1% of all scheduled block opportunities, plus any ordinary PoW blocks they mine. The prototype can measure both windows in ordinary PoW block heights calibrated to the intended durations. Rights expire at the end of the epoch.
 
-Before adopting the design, test how much influence PoW miners have over ticket and rights block inclusion, how reliably nodes can enforce the skip rule, and how much miners can bias the slot lottery if the seed comes from a single PoW block.
+#### Block production and confirmation
 
-## 4. Model C: Mining rights with delayed rewards
+The selected ticket holder signs a transaction block for its slot. The following PoW block commits to the signed blocks it includes and identifies any skipped slots. The protocol needs a consensus-verifiable rule for when a slot may be skipped so an offline rights holder cannot halt the chain. Rights blocks are provisional until included by a PoW block, and that inclusion can be reversed by a PoW reorganization. If a rights holder signs competing versions, the PoW block's commitment determines which version it confirms.
 
-This combines your earlier idea with mining rights.
+#### Fork choice
 
-Imagine:
+Nodes follow the valid history with the most cumulative ordinary block work. Tickets determine eligibility for rights slots and contribute zero weight to fork choice. Rights holders get most scheduled production, while ordinary PoW miners settle competing histories.
+
+#### Open design questions
+
+- How much influence do PoW miners have over which tickets and rights blocks make it into the chain?
+- What consensus rule lets nodes verify that a slot can be skipped?
+- How much can a miner bias the lottery if the seed comes from a single PoW block?
+
+## 5. Model C — Mining rights with delayed rewards
+
+This model combines temporary mining rights with a vesting period for block rewards.
 
 - Miners receive rights to produce blocks.
 - Rights have a limited lifespan.
@@ -149,9 +97,9 @@ This creates a long-term economic stake for miners.
 
 It could also support penalties for objectively provable violations, such as signing conflicting blocks at the same height.
 
-However, delayed rewards alone do not eliminate competitive expenditure. They reduce the present value of mining rewards, and potentially the corresponding equilibrium mining expenditure, but they also change miner financing requirements.
+Delayed rewards reduce the present value of block rewards, which can lower equilibrium mining expenditure. Vesting also changes miners' financing requirements.
 
-## 5. The fundamental design trade-off
+## 6. Comparison of allocation mechanisms
 
 | Mechanism                 | Resource expenditure | Permissionless entry      | Primary weakness       |
 | ------------------------- | -------------------- | ------------------------- | ---------------------- |
@@ -162,20 +110,13 @@ However, delayed rewards alone do not eliminate competitive expenditure. They re
 | Staked mining rights      | Low physical cost    | Capital-dependent         | Stake concentration    |
 | Reputation-based rights   | Low                  | Limited                   | Entrenchment           |
 
-The challenge is that you cannot cheaply allocate scarce, valuable mining rights among unlimited pseudonymous participants without some Sybil-resistance mechanism.
+Allocating scarce mining rights among pseudonymous participants requires Sybil resistance to prevent participants from gaining an advantage by creating additional identities.
 
 PoW uses energy. PoS uses capital. Identity-based systems use verification or trust.
 
-## 6. A more radical approach: separate issuance from security
+## 7. Separate issuance from security
 
-This is the direction I would investigate.
-
-In Bitcoin, block subsidies serve two functions simultaneously:
-
-1. Distribute newly created coins.
-2. Pay miners to secure the chain.
-
-You could separate them.
+Bitcoin's block subsidy distributes new coins and pays miners to secure the chain. Aurea could assign those functions separate budgets.
 
 For example, distribute 80% of new coins through a predetermined mechanism, while reserving 20% for block-production security.
 
@@ -183,12 +124,6 @@ Then allocate mining rights through an auction or stake-based selection, and use
 
 This reduces the amount of new issuance exposed to the competitive mining race. But the remaining 20% still needs to provide sufficient security, and the 80% distribution needs a Sybil-resistant allocation rule.
 
-The central design insight: Mining rights do not necessarily solve PoW's economic inefficiency. They solve it only if the mechanism for acquiring those rights avoids recreating the same competitive expenditure.
+## 8. Research objective
 
-I would frame the research problem as:
-
-\\[ \min \frac{\text{Real resources consumed by consensus}}{\text{Security provided}} \\]
-
-subject to permissionless participation, decentralization, and credible resistance to attacks.
-
-That is a much more interesting objective than simply designing another PoW algorithm.
+Evaluate whether Aurea can reduce the real resources spent on consensus for a given level of security while preserving permissionless participation and decentralization.
