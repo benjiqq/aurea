@@ -1,0 +1,20 @@
+{
+  "name": "aureanode",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "esbuild dashboard/app.jsx --bundle --minify --outfile=dashboard/dist/app.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}
