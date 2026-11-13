@@ -122,6 +122,18 @@ This is the critical insight:
 
 As long as rewards are allocated through an open competitive race, rent dissipation remains.
 
+### Hybrid variant: 51% mining rights and 49% ordinary PoW
+
+Run both production modes on one chain. Each cycle has 49 ordinary PoW blocks and 51 scheduled rights slots. Each PoW block is preceded by one rights slot, with a second slot before two evenly spaced PoW blocks per cycle. With equal block subsidies, the schedule gives rights holders 51% of potential issuance. A missed rights slot pays no subsidy, so the realized split can differ.
+
+**Allocate rights with PoW tickets.** During a roughly 24-hour allocation window, miners submit tickets that meet a protocol-set hash target and commit to the upcoming rights epoch, a recent PoW block, and the miner's public key. Nodes count each valid ticket included in the chain once. For a prototype, keep the ticket target fixed within each window so each ticket carries equal weight. Close the window far enough ahead of activation for the tally to gain PoW confirmations, then use a public seed to draw a winning ticket for each rights slot in the roughly 30-day epoch. A miner with 10% of accepted tickets can expect 10% of the rights slots, or 5.1% of all scheduled block opportunities, plus any ordinary PoW blocks they mine. The prototype can measure both windows in ordinary PoW block heights calibrated to the intended durations. Rights expire at the end of the epoch.
+
+**Produce and confirm blocks.** The selected ticket holder signs a transaction block for its slot. The following PoW block commits to the signed blocks it includes and identifies any skipped slots. The protocol needs a consensus-verifiable rule for when a slot may be skipped so an offline rights holder cannot halt the chain. Rights blocks are provisional until included by a PoW block, and that inclusion can be reversed by a PoW reorganization. If a rights holder signs competing versions, the PoW block's commitment determines which version it confirms.
+
+**Choose the chain by cumulative ordinary PoW.** Nodes follow the valid history with the most cumulative ordinary block work. Tickets determine eligibility for rights slots and contribute zero weight to fork choice. Rights holders get most scheduled production, while ordinary PoW miners settle competing histories.
+
+Before adopting the design, test how much influence PoW miners have over ticket and rights block inclusion, how reliably nodes can enforce the skip rule, and how much miners can bias the slot lottery if the seed comes from a single PoW block.
+
 ## 4. Model C: Mining rights with delayed rewards
 
 This combines your earlier idea with mining rights.
